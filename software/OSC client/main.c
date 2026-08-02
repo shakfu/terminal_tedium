@@ -103,7 +103,7 @@ uint16_t readADC(int _channel, uint16_t *adc_val){
       uint8_t spi_data[3];
       uint16_t result, tmp = *(adc_val + _channel); // previous.
 
-      spi_data[0] = 0x06 | (_channel>>2) & 0x01;    // single ended
+      spi_data[0] = 0x06 | ((_channel >> 2) & 0x01); // single ended
       spi_data[1] = _channel<<6;
       spi_data[2] = 0x00;
 
@@ -242,7 +242,7 @@ int main(void)
     int port = 9000;
     char *ip = "127.0.0.1"; 
 
-    memset(adc, 0, ADC_NUM_CHANNELS);
+    memset(adc, 0, sizeof(adc));   /* was ADC_NUM_CHANNELS: 6 of 12 bytes */
 
     // open socket : 
     if ((s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) die("socket");
@@ -323,7 +323,10 @@ int main(void)
                   _send = 0;
             }
             // increment adc cycle counter
-            _cnt = _cnt++ >= ADC_NUM ? 0x0 : _cnt; // 0x5 = ADC_NUM_CHANNELS-1
+            /* was: _cnt = _cnt++ >= ADC_NUM ? 0 : _cnt, which modifies and
+             * reads _cnt with no sequence point between them -- undefined
+             * behaviour, and the channel cycling was wrong regardless. */
+            _cnt = (_cnt >= ADC_NUM) ? 0x0 : _cnt + 1;
 
             // buttons ?
 

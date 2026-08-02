@@ -21,7 +21,17 @@ sending < 1 > turns the gate on, sending < 0 > off; the creation arguments gives
 
 ## gate/switch inputs: tedium_input
 <img src="https://c1.staticflickr.com/5/4209/35410514081_c1cc6ac906_b.jpg" width="50%">
-where GPIO_num = 4, 17, 2, 3, 23, 24, or 25. outputs bang.
+outputs bang. **the valid GPIO numbers differ between board revisions**, and
+the list previously given here was the pcm5102a one for both, which is wrong
+for wm8731 boards -- there, GPIO 2 and 3 are the I2C lines:
+
+| | trigger inputs | buttons |
+|---|---|---|
+| wm8731   | 4, 17, 14, 27 | 23, 25, 24 |
+| pcm5102a | 4, 17, 2, 3   | 23, 24, 25 |
+
+(the wm8731 assignments are the ones the OSC client has always used; see
+`software/OSC client/main.c`.)
 
 ## switch inputs (alternative): tedium_switch 
 <img src="https://c1.staticflickr.com/5/4213/35410514191_7b3abe0c24_b.jpg" width="50%">

@@ -151,8 +151,11 @@ static int terminal_tedium_adc_close(t_terminal_tedium_adc *spi){
     statusVal = 0x0;
   #endif  
     if(statusVal < 0) {
+      /* was: exit(1), which killed the whole Pd process -- and the
+       * instrument -- because one close() failed. */
       pd_error(spi, "terminal_tedium_adc: could not close SPI device");
-      exit(1);
+      spi->spifd = -1;
+      return(-1);
     }
     outlet_float(spi->x_out9, 0);
     spi->spifd = -1;
@@ -212,7 +215,10 @@ void terminal_tedium_adc_deadband(t_terminal_tedium_adc *spi, t_floatarg d){
  * This function frees the object (destructor).
  * ******************************************************************/
 static void terminal_tedium_adc_free(t_terminal_tedium_adc *spi){
-    if (spi->spifd == 0) {
+    /* was: == 0. Descriptor 0 is stdin, so an open SPI device never matched
+     * and the fd leaked on every object deletion; enough patch reloads and
+     * you run out of descriptors and can no longer open the ADC. */
+    if (spi->spifd >= 0) {
       terminal_tedium_adc_close(spi);
     }
 }
